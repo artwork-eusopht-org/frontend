@@ -11,6 +11,8 @@ import {
   Search
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { useNavigate } from 'react-router-dom';
+import { toast } from '@/components/ui/use-toast';
 
 interface LayoutProps {
   children: ReactNode;
@@ -23,7 +25,45 @@ const navigation = [
 
 
 const UserMenu = () => {
-  const { user, signOut } = useAuth();
+  const { user } = useAuth();
+    const navigate = useNavigate();
+
+  const handleLogout = async () => {
+    try {
+      // Call backend logout API
+      await fetch("http://localhost:5000/api/user/logout", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
+        },
+      });
+
+      // Clear localStorage
+      localStorage.removeItem("token");
+      localStorage.removeItem("name");
+      localStorage.removeItem("email");
+      localStorage.removeItem("id");
+      localStorage.removeItem("session");
+
+      // Show success toast
+      toast({
+        title: "Signed out",
+        description: "You have successfully signed out.",
+      });
+
+      // Redirect to login
+      navigate("/auth");
+    } catch (error) {
+      toast({
+        title: "Sign out failed",
+        description:
+          error instanceof Error ? error.message : "Something went wrong.",
+        variant: "destructive",
+      });
+    }
+  };
+
 
   return (
     <div className="flex items-center space-x-2">
@@ -33,7 +73,7 @@ const UserMenu = () => {
       <Button
         variant="outline"
         size="sm"
-        onClick={signOut}
+        onClick={handleLogout}
         className="flex items-center"
       >
         <LogOut className="w-4 h-4 mr-2" />

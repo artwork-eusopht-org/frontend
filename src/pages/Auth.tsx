@@ -1,53 +1,150 @@
-import { useState, useEffect } from 'react';
-import { useAuth } from '@/contexts/AuthContext';
-import { Navigate } from 'react-router-dom';
+import { useState } from 'react';
+import { Navigate, useNavigate } from 'react-router-dom';
+import axios from 'axios';
+
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Eye, EyeOff, Palette } from 'lucide-react';
+import { toast } from "@/components/ui/use-toast";
 
 const Auth = () => {
-  const { user, signIn, signUp, loading } = useAuth();
+  const [user, setUser] = useState(null);
+  const [session, setSession] = useState(null);
+  const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
+  const [redirect, setRedirect] = useState(false); // control redirect
+  const navigate = useNavigate();
   const [formData, setFormData] = useState({
     email: '',
     password: '',
     confirmPassword: '',
     fullName: '',
-    userType: 'visitor'
+    userType: 'visitor',
   });
 
-  // Redirect if already authenticated
-  if (user) {
+  // Redirect if already authenticated OR after login/signup
+  if (user || redirect) {
     return <Navigate to="/" replace />;
   }
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormData({
       ...formData,
-      [e.target.name]: e.target.value
+      [e.target.name]: e.target.value,
     });
   };
 
-  const handleSignIn = async (e: React.FormEvent) => {
-    e.preventDefault();
-    await signIn(formData.email, formData.password);
-  };
+ const handleSignIn = async (e: React.FormEvent) => {
+  e.preventDefault();
+  setLoading(true);
 
-  const handleSignUp = async (e: React.FormEvent) => {
-    e.preventDefault();
+  try {
+    const { data } = await axios.post("http://localhost:5000/api/user/login", {
+      email: formData.email,
+      password: formData.password,
+    });
 
-    if (formData.password !== formData.confirmPassword) {
+    if (data.status !== 200) {
+      toast({
+        title: "Error",
+        description: data.message,
+        variant: "destructive",
+      });
       return;
     }
 
-    await signUp(formData.email, formData.password, {
-      full_name: formData.fullName,
-      user_type: formData.userType
-    });
+    // Remove password before storing
+    const { password, ...userWithoutPassword } = data.user;
+
+    // Save each property separately in localStorage
+    localStorage.setItem("name", userWithoutPassword.name);
+    localStorage.setItem("email", userWithoutPassword.email);
+    localStorage.setItem("id", String(userWithoutPassword.id)); // convert to string
+    localStorage.setItem("token", data.token);
+
+    // Update React state
+    setUser(userWithoutPassword);
+    setSession({ user: userWithoutPassword, token: data.token });
+
+    console.log("Login success:", { user: userWithoutPassword, token: data.token });
+
+    navigate("/"); // redirect to home
+  } catch (error: any) {
+    console.error("Login failed:", error.response?.data || error.message);
+  } finally {
+    setLoading(false);
+  }
+};
+
+
+  const handleSignUp = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (formData.password !== formData.confirmPassword) {
+      toast({
+        title: "Error",
+        description: "Passwords do not match!",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    if (formData.password.length < 7) {
+      toast({
+        title: "Error",
+        description: "Password must be at least 7 characters long!",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setLoading(true);
+    try {
+      const { data } = await axios.post("http://localhost:5000/api/user/signup", {
+        email: formData.email,
+        password: formData.password,
+        userData: {
+          full_name: formData.fullName,
+          user_type: formData.userType,
+        },
+      });
+
+      if (data.status !== 200) {
+        toast({
+          title: "Error",
+          description: data.message,
+          variant: "destructive",
+        });
+        return;
+      }
+
+      const sessionData = { token: data.token };
+
+      setSession(sessionData);
+      localStorage.setItem("session", JSON.stringify(sessionData));
+
+      toast({
+        title: "Success!",
+        description: "Login success.",
+      });
+
+      console.log("Signup success:", sessionData);
+
+      setRedirect(true); // trigger redirect
+    } catch (error: any) {
+      toast({
+        title: "Signup failed",
+        description: error.response?.data?.message || error.message,
+        variant: "destructive",
+      });
+      console.error("Signup failed:", error.response?.data || error.message);
+    } finally {
+      setLoading(false);
+    }
   };
+
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-primary/10 via-background to-primary/5 p-4">

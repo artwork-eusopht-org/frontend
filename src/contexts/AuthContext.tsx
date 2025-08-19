@@ -2,6 +2,7 @@ import React, { createContext, useContext, useEffect, useState } from 'react';
 import { User, Session } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
+import { Navigate, useNavigate  } from 'react-router-dom';
 
 interface AuthContextType {
   user: User | null;
@@ -122,22 +123,66 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   };
 
-  const signOut = async () => {
-    try {
-      await supabase.auth.signOut();
-      toast({
-        title: "Signed out",
-        description: "You have successfully signed out.",
-      });
-    } catch (error) {
-      toast({
-        title: "Sign out failed",
-        description: error instanceof Error ? error.message : "Something went wrong.",
-        variant: "destructive",
-      });
-    }
-  };
+  // const signOut = async () => {
+  //   try {
+  //     // await supabase.auth.signOut();
 
+  //     toast({
+  //       title: "Signed out",
+  //       description: "You have successfully signed out.",
+  //     });
+  //     // Redirect to auth page after sign out
+  //   } catch (error) {
+  //     toast({
+  //       title: "Sign out failed",
+  //       description: error instanceof Error ? error.message : "Something went wrong.",
+  //       variant: "destructive",
+  //     });
+  //   }
+  // };
+
+
+  const signOut = async () => {
+  const navigate = useNavigate();
+
+  try {
+    // Call backend logout API (optional, mostly for logging)
+    await fetch("http://localhost:5000/api/user/logout", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${localStorage.getItem("token")}`,
+      },
+    });
+
+    // Clear localStorage
+    localStorage.removeItem("token");
+    localStorage.removeItem("name");
+    localStorage.removeItem("email");
+    localStorage.removeItem("id");
+    localStorage.removeItem("session");
+
+    // Optional: clear any React state if you have it
+    // setUser(null);
+    // setSession(null);
+
+    // Show success toast
+    toast({
+      title: "Signed out",
+      description: "You have successfully signed out.",
+    });
+
+    // Redirect to login page
+    navigate("/auth");
+  } catch (error) {
+    toast({
+      title: "Sign out failed",
+      description:
+        error instanceof Error ? error.message : "Something went wrong.",
+      variant: "destructive",
+    });
+  }
+};
 
   const value = {
     user,
