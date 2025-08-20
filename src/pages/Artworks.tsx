@@ -1,75 +1,49 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { EditArtworkModal } from './EditArtworkModal';
 import { AddArtworkModal } from './AddArtworkModal';
+import axios from 'axios';
 
 export interface Artwork {
   id: number;
   title: string;
   artist: string;
+  year: string;
+  medium: string;
+  dimensions: string;
   description: string;
   image: string;
   price: number;
-  status: 'available' | 'sold';
-  rating?: number;
-  visitorCount?: number;
-  offerStatus?: 'Accepted' | 'Rejected' | 'Pending';
-  paymentReceived?: boolean;
+  payment_status: string;
+  sold: string;
+  visitors?: number;
+  offerStatus: string;
 }
 
-const mockExhibitions = [
-  {
-    products: [
-      {
-        id: 1,
-        title: 'Abstract Canvas Art',
-        description: 'Hand-painted abstract art on canvas by emerging artists.',
-        price: 750,
-        image: 'artworks.png',
-        visitorCount: 23,
-        offerStatus: 'Pending',
-        status: 'available',
-        paymentReceived: false,
-        artist: 'Unknown Artist',
-      },
-      {
-        id: 2,
-        title: 'Modern Sculpture',
-        description: 'Metal sculpture inspired by contemporary urban life.',
-        price: 1200,
-        image: 'artworks.png',
-        visitorCount: 37,
-        offerStatus: 'Accepted',
-        status: 'sold',
-        paymentReceived: true,
-        artist: 'Unknown Artist',
-      },
-    ],
-  },
-];
-
-const extractedMockArtworks: Artwork[] = mockExhibitions.flatMap((ex) =>
-  ex.products.map((product, index) => ({
-    id: index + 100, // offset ID to avoid clash with manually added
-    title: product.title,
-    artist: product.artist,
-    description: product.description,
-    image: product.image,
-    price: product.price,
-    status: product.status as 'available' | 'sold',
-    rating: 4.5,
-    visitorCount: product.visitorCount,
-    offerStatus: product.offerStatus as 'Accepted' | 'Rejected' | 'Pending',
-    paymentReceived: product.paymentReceived,
-  }))
-);
-
 const AllArtworks: React.FC = () => {
-  const [artworks, setArtworks] = useState<Artwork[]>(extractedMockArtworks);
+
+  const [artworks, setArtworks] = useState<Artwork[]>([]);
+
+  useEffect(() => {
+    async function fetchData() {
+      try {
+        const response = await fetch(import.meta.env.VITE_API_URL + 'artworks/');
+        const json = await response.json();
+        console.log('All Artworks', json.data);
+        setArtworks(json.data);
+      } catch (error) {
+        console.error('Error fetching artworks:', error);
+      }
+    }
+
+    fetchData();
+  }, []);
+
+  // const [artworks, setArtworks] = useState<Artwork[]>(data);
 
   const [editingArtwork, setEditingArtwork] = useState<Artwork | null>(null);
   const [isAddModalOpen, setAddModalOpen] = useState(false);
@@ -109,7 +83,7 @@ const AllArtworks: React.FC = () => {
           <Card key={art.id} className="overflow-hidden group relative">
             <div className="aspect-[4/3] bg-muted">
               <img
-                src={art.image}
+                src={import.meta.env.VITE_IMAGE_URL+"uploads/"+art.image}
                 alt={art.title}
                 className="w-full h-full object-cover"
               />
@@ -126,8 +100,8 @@ const AllArtworks: React.FC = () => {
 
               <p className="text-xs text-muted-foreground">Artist: {art.artist}</p>
 
-              {art.visitorCount !== undefined && (
-                <p>👁️ Visitors: {art.visitorCount}</p>
+              {art.visitors !== undefined && (
+                <p>👁️ Visitors: {art.visitors}</p>
               )}
 
               {art.offerStatus && (
@@ -147,30 +121,30 @@ const AllArtworks: React.FC = () => {
                 </div>
               )}
 
-              {art.paymentReceived !== undefined && (
+              {art.payment_status !== undefined && (
                 <div className="flex items-center gap-2">
                   <span>💰 Payment:</span>
-                  <Badge variant={art.paymentReceived ? 'default' : 'secondary'}>
-                    {art.paymentReceived ? 'Received' : 'Pending'}
+                  <Badge variant={art.payment_status ? 'default' : 'secondary'}>
+                    {art.payment_status}
                   </Badge>
                 </div>
               )}
 
               <div className="flex items-center gap-2">
                 <span>✔️ Sold:</span>
-                <Badge variant={art.status === 'sold' ? 'default' : 'secondary'}>
-                  {art.status === 'sold' ? 'Yes' : 'No'}
+                <Badge variant={art.sold === 'sold' ? 'default' : 'secondary'}>
+                  {art.sold === 'Yes' ? 'Yes' : 'No'}
                 </Badge>
               </div>
 
               <div className="pt-2">
                 <p className="text-xs font-medium mb-1">📎 QR Code:</p>
                 <img
-                  src={`https://api.qrserver.com/v1/create-qr-code/?size=100x100&data=http://localhost:8082/artwork/${art.id}`}
+                  src={`https://api.qrserver.com/v1/create-qr-code/?size=100x100&data=${import.meta.env.VITE_FRONTEND_URL}visitor/artwork/${art.id}`}
                   alt="QR Code"
                 />
                 <a
-                  href={`https://api.qrserver.com/v1/create-qr-code/?size=100x100&data=http://localhost:8082/artwork/${art.id}`}
+                  href={`https://api.qrserver.com/v1/create-qr-code/?size=100x100&data=${import.meta.env.VITE_FRONTEND_URL}visitor/artwork/${art.id}`}
                   download={`artwork-${art.id}-qrcode.png`}
                   className="text-xs text-blue-600 underline mt-1 inline-block"
                 >
@@ -178,13 +152,13 @@ const AllArtworks: React.FC = () => {
                 </a>
               </div>
 
-              <Button
+              {/* <Button
                 variant="outline"
                 className="w-full mt-2"
                 onClick={() => setEditingArtwork(art)}
               >
                 ✏️ Edit
-              </Button>
+              </Button> */}
             </CardContent>
           </Card>
         ))}

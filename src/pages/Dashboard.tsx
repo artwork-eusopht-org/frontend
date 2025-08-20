@@ -3,57 +3,131 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { ArrowRight } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import { useEffect, useState } from 'react';
+import axios from 'axios';
+import { toast } from '@/hooks/use-toast';
 
-const mockArtworks = [
-  {
-    id: 1,
-    title: 'Modern Sculpture',
-    description: 'Metal sculpture inspired by contemporary urban life.',
-    price: 1200,
-    image: 'https://images.unsplash.com/photo-1527689368864-3a821dbccc34?w=800&h=600&fit=crop',
-    visitorCount: 37,
-    offerStatus: 'Accepted',
-    status: 'sold',
-    paymentReceived: true,
-    artist: 'Unknown Artist',
-  },
-  {
-    id: 2,
-    title: 'Abstract Canvas Art',
-    description: 'Hand-painted abstract art on canvas by emerging artists.',
-    price: 750,
-    image: 'https://images.unsplash.com/photo-1529245019870-59b249281fd3?w=800&h=600&fit=crop',
-    visitorCount: 23,
-    offerStatus: 'Pending',
-    status: 'available',
-    paymentReceived: false,
-    artist: 'Unknown Artist',
-  },
-  {
-    id: 3,
-    title: 'Modern Sculpture',
-    description: 'Metal sculpture inspired by contemporary urban life.',
-    price: 1200,
-    image: 'https://images.unsplash.com/photo-1527689368864-3a821dbccc34?w=800&h=600&fit=crop',
-    visitorCount: 37,
-    offerStatus: 'Accepted',
-    status: 'sold',
-    paymentReceived: true,
-    artist: 'Unknown Artist',
-  },
-];
+export interface Offer {
+  offer_id: number;
+  id: number;
+  title: string;
+  artist: string;
+  year: string;
+  medium: string;
+  dimensions: string;
+  description: string;
+  image: string;
+  price: number;
+  payment_status: string;
+  sold: string;
+  visitors?: number;
+  offerStatus: string;
+  offer: string;
+  name: string;
+  email: string;
+  phone: string;
+  notes: string;
+  created_at: string
+}
+
+export interface Artwork {
+  id: number;
+  title: string;
+  artist: string;
+  year: string;
+  medium: string;
+  dimensions: string;
+  description: string;
+  image: string;
+  price: number;
+  payment_status: string;
+  sold: string;
+  visitors?: number;
+  offerStatus: string;
+}
 
 export default function Dashboard() {
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case 'Active':
-        return 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200';
-      case 'Upcoming':
-        return 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200';
-      case 'Planning':
-        return 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200';
-      default:
-        return 'bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-200';
+
+  const [offers, setOffers] = useState<Offer[]>([]);
+  const [artworks, setArtworks] = useState<Artwork[]>([]);
+  const [filteredOffers, setFilteredOffers] = useState<Offer[]>([]);
+
+  useEffect(() => {
+    async function fetchData() {
+      try {
+        const response = await fetch(import.meta.env.VITE_API_URL + 'artworks/get-artwork/fetch-all-offers');
+        const json = await response.json();
+        console.log('All Recent Offers', json.data);
+        setOffers(json.data);
+        setFilteredOffers(json.data);
+      } catch (error) {
+        console.error('Error fetching artworks:', error);
+      }
+    }
+
+    async function fetchArtWork() {
+      try {
+        const response = await fetch(import.meta.env.VITE_API_URL + 'artworks/');
+        const json = await response.json();
+        console.log('All Artworks', json.data);
+        setArtworks(json.data);
+      } catch (error) {
+        console.error('Error fetching artworks:', error);
+      }
+    }
+
+    fetchData();
+    fetchArtWork();
+  }, []);
+  
+  const handleArtworkChange = (artworkId: number) => {
+    console.log("artworkId", artworkId);
+    if(artworkId == 0){
+      setFilteredOffers(offers);
+    }else{
+      const selectedOffers = offers.filter((offer) => offer.id === artworkId);
+      setFilteredOffers(selectedOffers);
+      console.log("Filtered offers:", selectedOffers);
+    }
+    
+  };
+
+  const respondOffer = async (id: number, status: string) => {
+    console.log("Accepted artwork ID:", id);
+    try {
+      const form = new FormData();
+
+      // Append all fields
+      form.append("id", String(id));
+      form.append("offer_status", status);
+      
+
+      const { data } = await axios.post(
+        import.meta.env.VITE_API_URL + "artworks/respond-offer",
+        form,
+        {
+          headers: {
+            "Content-Type": "multipart/form-data",
+          },
+        }
+      );
+      console.log(data.status);
+      if (data.status === 200) { // <-- matches PHP backend's response
+        toast({
+          title: "Success",
+          description: data.message,
+          variant: "default",
+        });
+      } else {
+        toast({
+          title: "Error",
+          description: "Failed to accept offer: Please try again later.",
+          variant: "destructive",
+        });
+      }
+    } catch (error) {
+      console.error("Error:", error);
+      alert("Something went wrong.");
     }
   };
 
@@ -74,51 +148,79 @@ export default function Dashboard() {
         <Card>
           <CardHeader>
             <div className="flex items-center justify-between">
-              <CardTitle>Recent Offers</CardTitle>
-              <Link to="/artworks">
+              <CardTitle>All Offers</CardTitle>
+
+              <select
+                className="border rounded-md px-3 py-1 text-sm text-gray-700 bg-white shadow-sm"
+                onChange={(e) => handleArtworkChange(Number(e.target.value))}
+              >
+                <option value="">Filter by Artwork</option>
+                {artworks.map((art) => (
+                  <option key={art.id} value={art.id}>
+                    {art.title}
+                  </option>
+                ))}
+              </select>
+              {/* <Link to="/artworks">
                 <Button variant="ghost" size="sm" className="gap-2">
                   View all
                   <ArrowRight className="w-4 h-4" />
                 </Button>
-              </Link>
+              </Link> */}
             </div>
           </CardHeader>
           <CardContent className="space-y-4">
-            {mockArtworks.map((artwork) => (
+            {filteredOffers.map((artwork) => (
               <div
-                key={artwork.id}
+                key={artwork.offer_id}
                 className="flex items-center justify-between p-3 border rounded-lg hover:bg-accent/50 transition-colors"
               >
                 <div className="space-y-1">
                   <div className="flex items-center gap-2">
                     <h4 className="font-medium">{artwork.title}</h4>
-                    <Badge className={getStatusColor(artwork.status)}>
-                      {artwork.status}
-                    </Badge>
+                    {/* <Badge className={getStatusColor(artwork.offerStatus)}>
+                      {artwork.offerStatus}
+                    </Badge> */}
                   </div>
                   <p className="text-sm text-muted-foreground">
                     {artwork.artist}
                   </p>
                   <p className="text-sm">
-                    💰 Price: ${artwork.price}
+                    Offer: ${artwork.offer}
                   </p>
                   <p className="text-sm">
-                    📦 Offer Status: {artwork.offerStatus}
+                    Name: {artwork.name}
                   </p>
                   <p className="text-sm">
-                    💳 Payment: {artwork.paymentReceived ? "Received" : "Pending"}
+                    Email: {artwork.email}
+                  </p>
+                  <p className="text-sm">
+                    Phone: {artwork.phone}
+                  </p>
+                  <p className="text-sm">
+                    Notes: {artwork.notes}
+                  </p>
+                  <p className="text-sm">
+                    Date: {new Date(artwork.created_at).toLocaleDateString('en-US', {
+                      year: 'numeric',
+                      month: 'long',
+                      day: 'numeric',
+                    })}
                   </p>
                 </div>
                 <div className="flex gap-2">
                   <Button
                     size="sm"
                     className="bg-[#570DF8] hover:bg-[#480bcf] text-white"
+                    onClick={() => respondOffer(artwork.offer_id, "Accept")}
                   >
                     Accept
                   </Button>
                   <Button
                     size="sm"
-                    className="bg-[#570DF8] hover:bg-[#480bcf] text-white"
+                    variant="destructive"
+                    className="bg-red-600 hover:bg-red-700 text-white shadow-none"
+                    onClick={() => respondOffer(artwork.offer_id, "Reject")}
                   >
                     Decline
                   </Button>

@@ -4,16 +4,21 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Select, SelectTrigger, SelectContent, SelectItem, SelectValue } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
-import { useState } from "react";
+import { useRef, useState } from "react";
+import axios from "axios";
+import { toast } from "@/components/ui/use-toast";
 
 export function AddArtworkModal({ open, onClose, onAdd }) {
+  
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
   const [form, setForm] = useState({
     title: "",
     artist: "",
     year: "",
     medium: "",
     dimensions: "",
-    image: "",
+    image: null,
     description: "",
     minPrice: "",
     offerStatus: "No Offer",
@@ -46,11 +51,94 @@ export function AddArtworkModal({ open, onClose, onAdd }) {
     }
   };
 
-  const handleSubmit = () => {
-    const newArtwork = { ...form, id: Date.now() };
-    onAdd(newArtwork);
-    onClose();
+  const handleSubmit = async () => {
+    try {
+      const formData = new FormData();
+
+      if(form.title == ""){
+        alert("Title is required");
+        return;
+      }
+      if(form.artist == ""){
+        alert("Artist is required");
+        return;
+      }
+      if(form.minPrice == ""){
+        alert("Price is required");
+        return;
+      }
+      if(form.image == null){
+        alert("Image is required");
+        return;
+      }
+
+      // Append all fields
+      formData.append("title", form.title);
+      formData.append("artist", form.artist);
+      formData.append("year", form.year);
+      formData.append("medium", form.medium);
+      formData.append("dimensions", form.dimensions);
+      formData.append("description", form.description);
+      formData.append("minPrice", form.minPrice);
+      formData.append("offerStatus", form.offerStatus);
+      formData.append("paymentStatus", form.paymentStatus);
+
+      // Image must be a File object (from <input type="file" />)
+      formData.append("image", form.image); // assuming form.image is a File
+
+      const { data } = await axios.post(
+        import.meta.env.VITE_API_URL + "artworks/add-artwork",
+        formData,
+        {
+          headers: {
+            "Content-Type": "multipart/form-data",
+          },
+        }
+      );
+
+      if (data.status !== 200) {
+        toast({
+          title: "Error",
+          description: data.message,
+          variant: "destructive",
+        });
+        return;
+      }
+
+      toast({
+        title: "Success",
+        description: data.message,
+        variant: "default",
+      });
+
+       if (fileInputRef.current) {
+        fileInputRef.current.value = "";
+      }
+      
+      // Reset form here
+      setForm({
+        title: "",
+        artist: "",
+        year: "",
+        medium: "",
+        dimensions: "",
+        image: null,
+        description: "",
+        minPrice: "",
+        offerStatus: "No Offer",
+        paymentStatus: "Unpaid",
+      });
+
+    } catch (error) {
+      console.error(error);
+      toast({
+        title: "Error",
+        description: "An error occurred while uploading.",
+        variant: "destructive",
+      });
+    }
   };
+
 
   return (
     <Dialog open={open} onOpenChange={onClose}>
@@ -99,14 +187,20 @@ export function AddArtworkModal({ open, onClose, onAdd }) {
 
           {/* Image Upload */}
           <div className="space-y-2">
-            <Input type="file" accept="image/*" onChange={handleImageUpload} />
-            {form.image && (
+            <input
+              type="file"
+              accept="image/*"
+              ref={fileInputRef}
+              onChange={(e) => setForm({ ...form, image: e.target.files[0] })}
+            />
+
+            {/* {form.image && (
               <img
                 src={form.image}
                 alt="Preview"
                 className="w-20 h-20 object-cover rounded"
               />
-            )}
+            )} */}
           </div>
 
           {/* Description */}
@@ -129,7 +223,7 @@ export function AddArtworkModal({ open, onClose, onAdd }) {
           />
 
           {/* Offer Status Dropdown */}
-          <Select
+          {/* <Select
             value={form.offerStatus}
             onValueChange={(value) => handleSelectChange("offerStatus", value)}
           >
@@ -140,10 +234,10 @@ export function AddArtworkModal({ open, onClose, onAdd }) {
               <SelectItem value="No Offer">No Offer</SelectItem>
               <SelectItem value="On Offer">On Offer</SelectItem>
             </SelectContent>
-          </Select>
+          </Select> */}
 
           {/* Payment Status Dropdown */}
-          <Select
+          {/* <Select
             value={form.paymentStatus}
             onValueChange={(value) => handleSelectChange("paymentStatus", value)}
           >
@@ -154,7 +248,7 @@ export function AddArtworkModal({ open, onClose, onAdd }) {
               <SelectItem value="Unpaid">Unpaid</SelectItem>
               <SelectItem value="Paid">Paid</SelectItem>
             </SelectContent>
-          </Select>
+          </Select> */}
 
           <div className="flex justify-end gap-2">
             <Button variant="outline" onClick={onClose}>

@@ -30,7 +30,7 @@ const App = () => (
 
             {/* Protected Routes */}
             <Route path="/visitor/artwork/:artworkId" element={<VisitorDashboard />} />
-            <Route path="/visitor/artwork/:artworkId" element={<VisitorArtworkPage />} />
+            {/* <Route path="/visitor/artwork/:artworkId" element={<VisitorArtworkPage />} /> */}
             <Route path="/" element={<ProtectedRoute><Index /></ProtectedRoute>} />
             <Route path="/artworks" element={<ProtectedRoute><Layout><Artworks /></Layout></ProtectedRoute>} />
 

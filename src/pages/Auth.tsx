@@ -42,7 +42,8 @@ const Auth = () => {
   setLoading(true);
 
   try {
-    const { data } = await axios.post("http://localhost:5000/api/user/login", {
+    console.log("baseurl", import.meta.env.VITE_API_URL);
+    const { data } = await axios.post(import.meta.env.VITE_API_URL+"user/login", {
       email: formData.email,
       password: formData.password,
     });
@@ -102,7 +103,8 @@ const Auth = () => {
 
     setLoading(true);
     try {
-      const { data } = await axios.post("http://localhost:5000/api/user/signup", {
+      console.log("baseurl", import.meta.env.VITE_API_URL);
+      const { data } = await axios.post(import.meta.env.VITE_API_URL+"user/signup", {
         email: formData.email,
         password: formData.password,
         userData: {
@@ -160,15 +162,15 @@ const Auth = () => {
         </div>
 
         <Card className="shadow-elegant border-0 bg-gradient-card">
-          <CardHeader className="text-center">
+          {/* <CardHeader className="text-center">
             <CardTitle>Authentication</CardTitle>
             <CardDescription>
               Sign in to your account or create a new one
             </CardDescription>
-          </CardHeader>
+          </CardHeader> */}
           <CardContent>
             <Tabs defaultValue="signin" className="w-full">
-              <TabsList className="grid w-full grid-cols-2">
+              {/* <TabsList className="grid w-full grid-cols-2">
                 <TabsTrigger
                   value="signin"
                   className="text-[#570DF8] hover:text-[#570DF8] font-medium"
@@ -182,7 +184,7 @@ const Auth = () => {
                 >
                   Sign Up
                 </TabsTrigger>
-              </TabsList>
+              </TabsList> */}
 
               <TabsContent value="signin">
                 <form onSubmit={handleSignIn} className="space-y-4">

@@ -1,11 +1,18 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Checkbox } from "@/components/ui/checkbox";
 import { X } from "lucide-react";
+import { useParams } from "react-router-dom";
+import axios from "axios";
+import { toast } from "@/components/ui/use-toast";
 
 const VisitorDashboard: React.FC = () => {
+
+  const { artworkId } = useParams();
+
+  const [artwork, setArtwork] = useState<any>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [formData, setFormData] = useState({
     fullName: "",
@@ -17,6 +24,26 @@ const VisitorDashboard: React.FC = () => {
   });
   const [submitted, setSubmitted] = useState(false);
 
+  useEffect(() => {
+    async function fetchData() {
+      try {
+        const response = await fetch(import.meta.env.VITE_API_URL + 'artworks/get-artwork/' + artworkId);
+        const json = await response.json();
+        console.log('Artwork', json.data);
+        setArtwork(json.data);
+      } catch (error) {
+        console.error('Error fetching artwork:', error);
+      }
+    }
+
+    fetchData();
+  }, [artworkId]);
+
+  if (!artwork) {
+    // ✅ Still safe because all hooks are already initialized above
+    return <div className="flex items-center justify-center h-screen">Loading...</div>;
+  }
+  
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
   ) => {
@@ -30,10 +57,11 @@ const VisitorDashboard: React.FC = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (!formData.fullName || !formData.email || !formData.offer) {
+    if (!formData.fullName || !formData.email || !formData.offer || !formData.readyToPurchase) {
       alert("Please fill in all required fields.");
       return;
     }
+    
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(formData.email)) {
       alert("Please enter a valid email address.");
@@ -45,15 +73,27 @@ const VisitorDashboard: React.FC = () => {
     }
 
     try {
-      const res = await fetch("http://localhost/mailer-backend/send-offer.php", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(formData),
-      });
+      const form = new FormData();
 
-      const data = await res.json();
+      // Append all fields
+      form.append("name", formData.fullName);
+      form.append("email", formData.email);
+      form.append("phone", formData.phone);
+      form.append("offer", formData.offer);
+      form.append("notes", formData.notes);
+      form.append("art_id", artworkId);
 
-      if (data.status === "success") { // <-- matches PHP backend's response
+      const { data } = await axios.post(
+        import.meta.env.VITE_API_URL + "artworks/make-offer",
+        form,
+        {
+          headers: {
+            "Content-Type": "multipart/form-data",
+          },
+        }
+      );
+      console.log(data.status);
+      if (data.status === 200) { // <-- matches PHP backend's response
         setSubmitted(true);
         setTimeout(() => {
           setIsModalOpen(false);
@@ -67,12 +107,21 @@ const VisitorDashboard: React.FC = () => {
             readyToPurchase: false,
           });
         }, 2000);
+        toast({
+          title: "Success",
+          description: data.message,
+          variant: "default",
+        });
       } else {
-        alert("Failed to send offer: " + (data.message || "Please try again later."));
+        toast({
+          title: "Error",
+          description: "Failed to send offer: Please try again later.",
+          variant: "destructive",
+        });
       }
     } catch (error) {
       console.error("Error:", error);
-      alert("Something went wrong. Check your PHP server logs.");
+      alert("Something went wrong.");
     }
   };
 
@@ -82,8 +131,8 @@ const VisitorDashboard: React.FC = () => {
       {/* Left side - full image */}
       <div className="md:w-1/2 w-full">
         <img
-          src="/artwork.png"
-          alt="Artwork"
+          src={import.meta.env.VITE_IMAGE_URL+"uploads/"+artwork[0].image}
+          alt={artwork[0].title}
           className="w-full h-full object-cover"
         />
       </div>
@@ -91,17 +140,17 @@ const VisitorDashboard: React.FC = () => {
       {/* Right side - details */}
       <div className="md:w-1/2 w-full p-6 md:p-10 flex flex-col justify-center bg-white">
         <h1 className="text-3xl md:text-4xl font-bold text-[#00263E] mb-4">
-          Branch of Affection
+          {artwork[0].title}
         </h1>
         <p className="text-base md:text-lg text-gray-700 mb-6">
-          Two bright little birds share a tender moment on a sunlit branch, a simple yet heartwarming reminder that love needs no words.
+          {artwork[0].description}
         </p>
         <ul className="space-y-2 text-gray-600 mb-10 text-sm md:text-base">
-          <li><strong>Artist:</strong> John Doe</li>
-          <li><strong>Year:</strong> 2023</li>
-          <li><strong>Medium:</strong> Oil on Canvas</li>
-          <li><strong>Dimensions:</strong> 80 x 100 cm</li>
-          <li><strong>Price:</strong> AUD 500</li>
+          <li><strong>Artist:</strong> {artwork[0].artist}</li>
+          <li><strong>Year:</strong> {artwork[0].year}</li>
+          <li><strong>Medium:</strong> {artwork[0].medium}</li>
+          <li><strong>Dimensions:</strong> {artwork[0].dimensions}</li>
+          <li><strong>Price:</strong> AUD {artwork[0].price}</li>
         </ul>
       </div>
 
