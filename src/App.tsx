@@ -14,6 +14,8 @@ import Auth from "./pages/Auth";
 import NotFound from "./pages/NotFound";
 import VisitorArtworkPage from "./pages/VisitorArtworkPage";
 import VisitorDashboard from "./pages/VisitorDashboard";
+import PaymentSuccess from "./pages/PaymentSuccess";
+import PaymentCancel from "./pages/PaymentCancel";
 
 const queryClient = new QueryClient();
 
@@ -27,7 +29,8 @@ const App = () => (
           <Routes>
             {/* Public Auth Route */}
             <Route path="/auth" element={<Auth />} />
-
+            <Route path="/payment-success" element={<PaymentSuccess />} />
+            <Route path="/payment-cancelled" element={<PaymentCancel />} />
             {/* Protected Routes */}
             <Route path="/visitor/artwork/:artworkId" element={<VisitorDashboard />} />
             {/* <Route path="/visitor/artwork/:artworkId" element={<VisitorArtworkPage />} /> */}

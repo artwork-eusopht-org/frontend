@@ -155,12 +155,14 @@ const VisitorDashboard: React.FC = () => {
       </div>
 
       {/* Floating button */}
-      <Button
-        onClick={() => setIsModalOpen(true)}
-        className="fixed bottom-6 right-6 bg-[#009CDE] hover:bg-[#0088C2] text-white px-6 py-3 rounded-full shadow-lg z-50"
-      >
-        Make an Offer
-      </Button>
+      {artwork[0]?.sold === "No" && (
+        <Button
+          onClick={() => setIsModalOpen(true)}
+          className="fixed bottom-6 right-6 bg-[#009CDE] hover:bg-[#0088C2] text-white px-6 py-3 rounded-full shadow-lg z-50"
+        >
+          Make an Offer
+        </Button>
+      )}
 
       {/* Modal */}
       {isModalOpen && (

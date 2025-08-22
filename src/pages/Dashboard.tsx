@@ -27,7 +27,8 @@ export interface Offer {
   email: string;
   phone: string;
   notes: string;
-  created_at: string
+  created_at: string,
+  offer_status: string,
 }
 
 export interface Artwork {
@@ -131,6 +132,19 @@ export default function Dashboard() {
     }
   };
 
+  const getStatusColor = (status: string) => {
+    switch (status) {
+      case 'Accept':
+        return 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200';
+      case 'Reject':
+        return 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200';
+      case 'Planning':
+        return 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200';
+      default:
+        return 'bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-200';
+    }
+  };
+
   return (
     <div className="space-y-6">
       {/* Header */}
@@ -178,9 +192,9 @@ export default function Dashboard() {
                 <div className="space-y-1">
                   <div className="flex items-center gap-2">
                     <h4 className="font-medium">{artwork.title}</h4>
-                    {/* <Badge className={getStatusColor(artwork.offerStatus)}>
-                      {artwork.offerStatus}
-                    </Badge> */}
+                    <Badge className={getStatusColor(artwork.offer_status)}>
+                      {artwork.offer_status}
+                    </Badge>
                   </div>
                   <p className="text-sm text-muted-foreground">
                     {artwork.artist}
