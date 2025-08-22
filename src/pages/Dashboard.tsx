@@ -93,7 +93,7 @@ export default function Dashboard() {
     
   };
 
-  const respondOffer = async (id: number, status: string) => {
+  const respondOffer = async (id: number, status: string, artID: number) => {
     console.log("Accepted artwork ID:", id);
     try {
       const form = new FormData();
@@ -119,7 +119,9 @@ export default function Dashboard() {
           description: data.message,
           variant: "default",
         });
-        fetchData();
+        await fetchData();
+        console.log("calling handle change after accept reject", artID);
+        handleArtworkChange(artID);
       } else {
         toast({
           title: "Error",
@@ -227,7 +229,7 @@ export default function Dashboard() {
                   <Button
                     size="sm"
                     className="bg-[#570DF8] hover:bg-[#480bcf] text-white"
-                    onClick={() => respondOffer(artwork.offer_id, "Accept")}
+                    onClick={() => respondOffer(artwork.offer_id, "Accept",artwork.id)}
                   >
                     Accept
                   </Button>
@@ -235,7 +237,7 @@ export default function Dashboard() {
                     size="sm"
                     variant="destructive"
                     className="bg-red-600 hover:bg-red-700 text-white shadow-none"
-                    onClick={() => respondOffer(artwork.offer_id, "Reject")}
+                    onClick={() => respondOffer(artwork.offer_id, "Reject",artwork.id)}
                   >
                     Reject
                   </Button>
