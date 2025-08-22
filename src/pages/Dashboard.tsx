@@ -53,30 +53,30 @@ export default function Dashboard() {
   const [artworks, setArtworks] = useState<Artwork[]>([]);
   const [filteredOffers, setFilteredOffers] = useState<Offer[]>([]);
 
+  async function fetchData() {
+    try {
+      const response = await fetch(import.meta.env.VITE_API_URL + 'artworks/get-artwork/fetch-all-offers');
+      const json = await response.json();
+      console.log('All Recent Offers', json.data);
+      setOffers(json.data);
+      setFilteredOffers(json.data);
+    } catch (error) {
+      console.error('Error fetching artworks:', error);
+    }
+  }
+
+  async function fetchArtWork() {
+    try {
+      const response = await fetch(import.meta.env.VITE_API_URL + 'artworks/');
+      const json = await response.json();
+      console.log('All Artworks', json.data);
+      setArtworks(json.data);
+    } catch (error) {
+      console.error('Error fetching artworks:', error);
+    }
+  }
+
   useEffect(() => {
-    async function fetchData() {
-      try {
-        const response = await fetch(import.meta.env.VITE_API_URL + 'artworks/get-artwork/fetch-all-offers');
-        const json = await response.json();
-        console.log('All Recent Offers', json.data);
-        setOffers(json.data);
-        setFilteredOffers(json.data);
-      } catch (error) {
-        console.error('Error fetching artworks:', error);
-      }
-    }
-
-    async function fetchArtWork() {
-      try {
-        const response = await fetch(import.meta.env.VITE_API_URL + 'artworks/');
-        const json = await response.json();
-        console.log('All Artworks', json.data);
-        setArtworks(json.data);
-      } catch (error) {
-        console.error('Error fetching artworks:', error);
-      }
-    }
-
     fetchData();
     fetchArtWork();
   }, []);
@@ -119,6 +119,7 @@ export default function Dashboard() {
           description: data.message,
           variant: "default",
         });
+        fetchData();
       } else {
         toast({
           title: "Error",
@@ -168,7 +169,7 @@ export default function Dashboard() {
                 className="border rounded-md px-3 py-1 text-sm text-gray-700 bg-white shadow-sm"
                 onChange={(e) => handleArtworkChange(Number(e.target.value))}
               >
-                <option value="">Filter by Artwork</option>
+                <option value="">All Artwork</option>
                 {artworks.map((art) => (
                   <option key={art.id} value={art.id}>
                     {art.title}
@@ -236,7 +237,7 @@ export default function Dashboard() {
                     className="bg-red-600 hover:bg-red-700 text-white shadow-none"
                     onClick={() => respondOffer(artwork.offer_id, "Reject")}
                   >
-                    Decline
+                    Reject
                   </Button>
                 </div>
 

@@ -28,19 +28,19 @@ const AllArtworks: React.FC = () => {
 
   const [artworks, setArtworks] = useState<Artwork[]>([]);
 
-  useEffect(() => {
-    async function fetchData() {
-      try {
-        const response = await fetch(import.meta.env.VITE_API_URL + 'artworks/');
-        const json = await response.json();
-        console.log('All Artworks', json.data);
-        setArtworks(json.data);
-      } catch (error) {
-        console.error('Error fetching artworks:', error);
-      }
+  const fetchArtworks = async () => {
+    try {
+      const response = await fetch(import.meta.env.VITE_API_URL + 'artworks/');
+      const json = await response.json();
+      console.log('All Artworks', json.data);
+      setArtworks(json.data);
+    } catch (error) {
+      console.error('Error fetching artworks:', error);
     }
+  };
 
-    fetchData();
+  useEffect(() => {
+    fetchArtworks();
   }, []);
 
   // const [artworks, setArtworks] = useState<Artwork[]>(data);
@@ -55,8 +55,9 @@ const AllArtworks: React.FC = () => {
     setEditingArtwork(null);
   };
 
-  const handleAdd = (newArtwork: Artwork) => {
-    setArtworks((prev) => [...prev, { ...newArtwork, id: Date.now() }]);
+  const handleAdd = async (newArtwork: Artwork) => {
+    //setArtworks((prev) => [...prev, { ...newArtwork, id: Date.now() }]);
+    await fetchArtworks();
     setAddModalOpen(false);
   };
 
@@ -140,11 +141,11 @@ const AllArtworks: React.FC = () => {
               <div className="pt-2">
                 <p className="text-xs font-medium mb-1">📎 QR Code:</p>
                 <img
-                  src={`https://api.qrserver.com/v1/create-qr-code/?size=100x100&data=${import.meta.env.VITE_FRONTEND_URL}visitor/artwork/${art.id}`}
+                  src={`https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${import.meta.env.VITE_FRONTEND_URL}visitor/artwork/${art.id}`}
                   alt="QR Code"
                 />
                 <a
-                  href={`https://api.qrserver.com/v1/create-qr-code/?size=100x100&data=${import.meta.env.VITE_FRONTEND_URL}visitor/artwork/${art.id}`}
+                  href={`https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${import.meta.env.VITE_FRONTEND_URL}visitor/artwork/${art.id}`}
                   download={`artwork-${art.id}-qrcode.png`}
                   className="text-xs text-blue-600 underline mt-1 inline-block"
                 >

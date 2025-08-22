@@ -146,11 +146,24 @@ const VisitorDashboard: React.FC = () => {
           {artwork[0].description}
         </p>
         <ul className="space-y-2 text-gray-600 mb-10 text-sm md:text-base">
-          <li><strong>Artist:</strong> {artwork[0].artist}</li>
-          <li><strong>Year:</strong> {artwork[0].year}</li>
-          <li><strong>Medium:</strong> {artwork[0].medium}</li>
-          <li><strong>Dimensions:</strong> {artwork[0].dimensions}</li>
-          <li><strong>Price:</strong> AUD {artwork[0].price}</li>
+          {artwork[0].artist !== "" && (
+            <li><strong>Artist:</strong> {artwork[0].artist}</li>
+          )}
+          {artwork[0].year !== "" && (
+            <li><strong>Year:</strong> {artwork[0].year}</li>
+          )}
+          {artwork[0].medium !== "" && (
+            <li><strong>Medium:</strong> {artwork[0].medium}</li>
+          )}
+          {artwork[0].dimensions !== "" && (
+            <li><strong>Dimensions:</strong> {artwork[0].dimensions}</li>
+          )}
+          {artwork[0].price !== "" && (
+            <li><strong>Price:</strong> AUD {artwork[0].price}</li>
+          )}
+          {artwork[0].sold === "Yes" && (
+            <li><strong>This artwork has been Sold</strong></li>
+          )}
         </ul>
       </div>
 

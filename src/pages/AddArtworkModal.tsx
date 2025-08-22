@@ -129,6 +129,8 @@ export function AddArtworkModal({ open, onClose, onAdd }) {
         paymentStatus: "Unpaid",
       });
 
+      await onAdd();
+      
     } catch (error) {
       console.error(error);
       toast({
