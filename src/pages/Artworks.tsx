@@ -22,6 +22,7 @@ export interface Artwork {
   sold: string;
   visitors?: number;
   offerStatus: string;
+  offer_count: string
 }
 
 const AllArtworks: React.FC = () => {
@@ -107,7 +108,7 @@ const AllArtworks: React.FC = () => {
 
               {art.offerStatus && (
                 <div className="flex items-center gap-2">
-                  <span>📩 Offer Status:</span>
+                  <span>📩 Offers:</span>
                   <Badge
                     variant={
                       art.offerStatus === 'Accepted'
@@ -117,7 +118,7 @@ const AllArtworks: React.FC = () => {
                           : 'secondary'
                     }
                   >
-                    {art.offerStatus}
+                    {art.offer_count}
                   </Badge>
                 </div>
               )}
