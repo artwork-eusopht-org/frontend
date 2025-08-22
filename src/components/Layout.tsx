@@ -31,7 +31,7 @@ const UserMenu = () => {
   const handleLogout = async () => {
     try {
       // Call backend logout API
-      await fetch("http://localhost:5000/api/user/logout", {
+      await fetch(import.meta.env.VITE_API_URL+"user/logout", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
