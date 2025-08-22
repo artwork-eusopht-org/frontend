@@ -131,7 +131,7 @@ const VisitorDashboard: React.FC = () => {
       {/* Left side - full image */}
       <div className="md:w-1/2 w-full">
         <img
-          src={import.meta.env.VITE_IMAGE_URL+"uploads/"+artwork[0].image}
+          src={artwork[0].image}
           alt={artwork[0].title}
           className="w-full h-full object-cover"
         />

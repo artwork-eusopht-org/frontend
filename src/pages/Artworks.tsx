@@ -83,7 +83,7 @@ const AllArtworks: React.FC = () => {
           <Card key={art.id} className="overflow-hidden group relative">
             <div className="aspect-[4/3] bg-muted">
               <img
-                src={import.meta.env.VITE_IMAGE_URL+"uploads/"+art.image}
+                src={art.image}
                 alt={art.title}
                 className="w-full h-full object-cover"
               />

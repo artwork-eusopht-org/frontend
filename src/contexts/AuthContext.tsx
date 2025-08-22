@@ -147,7 +147,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   try {
     // Call backend logout API (optional, mostly for logging)
-    await fetch("http://localhost:5000/api/user/logout", {
+    await fetch(import.meta.env.VITE_API_URL+"user/logout", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",

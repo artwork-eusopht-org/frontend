@@ -18,7 +18,7 @@ export function AddArtworkModal({ open, onClose, onAdd }) {
     year: "",
     medium: "",
     dimensions: "",
-    image: null,
+    image: "",
     description: "",
     minPrice: "",
     offerStatus: "No Offer",
@@ -54,7 +54,7 @@ export function AddArtworkModal({ open, onClose, onAdd }) {
   const handleSubmit = async () => {
     try {
       const formData = new FormData();
-
+      console.log(form.image);
       if(form.title == ""){
         alert("Title is required");
         return;
@@ -67,7 +67,7 @@ export function AddArtworkModal({ open, onClose, onAdd }) {
         alert("Price is required");
         return;
       }
-      if(form.image == null){
+      if(form.image == ""){
         alert("Image is required");
         return;
       }
@@ -111,7 +111,7 @@ export function AddArtworkModal({ open, onClose, onAdd }) {
         variant: "default",
       });
 
-       if (fileInputRef.current) {
+      if (fileInputRef.current) {
         fileInputRef.current.value = "";
       }
       
@@ -122,7 +122,7 @@ export function AddArtworkModal({ open, onClose, onAdd }) {
         year: "",
         medium: "",
         dimensions: "",
-        image: null,
+        image: "",
         description: "",
         minPrice: "",
         offerStatus: "No Offer",
@@ -187,20 +187,14 @@ export function AddArtworkModal({ open, onClose, onAdd }) {
 
           {/* Image Upload */}
           <div className="space-y-2">
-            <input
-              type="file"
-              accept="image/*"
-              ref={fileInputRef}
-              onChange={(e) => setForm({ ...form, image: e.target.files[0] })}
-            />
-
-            {/* {form.image && (
+            <Input type="file" accept="image/*" onChange={handleImageUpload} ref={fileInputRef} />
+            {form.image && (
               <img
                 src={form.image}
                 alt="Preview"
                 className="w-20 h-20 object-cover rounded"
               />
-            )} */}
+            )}
           </div>
 
           {/* Description */}
