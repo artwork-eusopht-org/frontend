@@ -149,6 +149,7 @@ const AllArtworks: React.FC = () => {
                   href={`https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${import.meta.env.VITE_FRONTEND_URL}visitor/artwork/${art.id}`}
                   download={`artwork-${art.id}-qrcode.png`}
                   className="text-xs text-blue-600 underline mt-1 inline-block"
+                  target='_blank'
                 >
                   Download QR Code
                 </a>

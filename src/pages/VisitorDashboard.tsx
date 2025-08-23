@@ -95,18 +95,18 @@ const VisitorDashboard: React.FC = () => {
       console.log(data.status);
       if (data.status === 200) { // <-- matches PHP backend's response
         setSubmitted(true);
-        setTimeout(() => {
-          setIsModalOpen(false);
-          setSubmitted(false);
-          setFormData({
-            fullName: "",
-            email: "",
-            phone: "",
-            offer: "",
-            notes: "",
-            readyToPurchase: false,
-          });
-        }, 2000);
+        // setTimeout(() => {
+        //   setIsModalOpen(false);
+        //   setSubmitted(false);
+        //   setFormData({
+        //     fullName: "",
+        //     email: "",
+        //     phone: "",
+        //     offer: "",
+        //     notes: "",
+        //     readyToPurchase: false,
+        //   });
+        // }, 2000);
         toast({
           title: "Success",
           description: data.message,
@@ -182,7 +182,18 @@ const VisitorDashboard: React.FC = () => {
         <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex justify-center items-center p-4 overflow-y-auto">
           <div className="bg-white rounded-lg shadow-lg w-full max-w-md p-6 relative my-auto">
             <button
-              onClick={() => setIsModalOpen(false)}
+              onClick={() => {
+                setIsModalOpen(false);
+                setSubmitted(false);
+                setFormData({
+                  fullName: "",
+                  email: "",
+                  phone: "",
+                  offer: "",
+                  notes: "",
+                  readyToPurchase: false,
+                });
+              }}
               className="absolute top-3 right-3 text-gray-500 hover:text-black"
             >
               <X size={20} />

@@ -211,8 +211,7 @@ export function AddArtworkModal({ open, onClose, onAdd }) {
           {/* Price */}
           <Input
             name="minPrice"
-            type="number"
-            min="0"
+            type="text"
             value={form.minPrice}
             onChange={handleChange}
             placeholder="Price"

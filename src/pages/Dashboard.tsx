@@ -6,6 +6,7 @@ import { Link } from 'react-router-dom';
 import { useEffect, useState } from 'react';
 import axios from 'axios';
 import { toast } from '@/hooks/use-toast';
+import ComboBox from '@/components/ui/select-with-seach';
 
 export interface Offer {
   offer_id: number;
@@ -40,7 +41,7 @@ export interface Artwork {
   dimensions: string;
   description: string;
   image: string;
-  price: number;
+  price: string;
   payment_status: string;
   sold: string;
   visitors?: number;
@@ -167,7 +168,7 @@ export default function Dashboard() {
             <div className="flex items-center justify-between">
               <CardTitle>All Offers</CardTitle>
 
-              <select
+              {/* <select
                 className="border rounded-md px-3 py-1 text-sm text-gray-700 bg-white shadow-sm"
                 onChange={(e) => handleArtworkChange(Number(e.target.value))}
               >
@@ -177,7 +178,16 @@ export default function Dashboard() {
                     {art.title}
                   </option>
                 ))}
-              </select>
+              </select> */}
+
+              <ComboBox  options={artworks.map((art) => ({
+                  value: art.id,
+                  label: art.title,
+                }))}
+                // value={selectedArtworkId}
+                onChange={(val) => handleArtworkChange(Number(val))}
+                placeholder="All Artwork" />
+              
               {/* <Link to="/artworks">
                 <Button variant="ghost" size="sm" className="gap-2">
                   View all
