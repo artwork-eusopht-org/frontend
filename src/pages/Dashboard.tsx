@@ -179,11 +179,12 @@ export default function Dashboard() {
                   </option>
                 ))}
               </select> */}
-
+              {/* search with dropdown */}
               <ComboBox  options={artworks.map((art) => ({
                   value: art.id,
                   label: art.title,
                 }))}
+
                 // value={selectedArtworkId}
                 onChange={(val) => handleArtworkChange(Number(val))}
                 placeholder="All Artwork" />
