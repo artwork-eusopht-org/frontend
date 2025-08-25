@@ -37,7 +37,7 @@ export function AddArtworkModal({ open, onClose, onAdd }) {
   const handleSelectChange = (name, value) => {
     setForm((prev) => ({ ...prev, [name]: value }));
   };
-
+  // Add New code for image upload with compression
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
