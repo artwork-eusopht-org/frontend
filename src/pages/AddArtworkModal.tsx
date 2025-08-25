@@ -9,7 +9,7 @@ import axios from "axios";
 import { toast } from "@/components/ui/use-toast";
 
 export function AddArtworkModal({ open, onClose, onAdd }) {
-  
+
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const [form, setForm] = useState({
@@ -38,36 +38,63 @@ export function AddArtworkModal({ open, onClose, onAdd }) {
     setForm((prev) => ({ ...prev, [name]: value }));
   };
 
-  const handleImageUpload = (e) => {
+  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
-    if (file) {
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        if (typeof reader.result === "string") {
-          setForm((prev) => ({ ...prev, image: reader.result as string }));
-        }
-      };
-      reader.readAsDataURL(file);
-    }
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onloadend = () => {
+      if (typeof reader.result === "string") {
+        const img = new Image();
+        img.src = reader.result;
+        img.onload = () => {
+          let width = img.width;
+          let height = img.height;
+
+          if (width > 1000) {
+            width = Math.floor(width / 2);
+            height = Math.floor(height / 2);
+          }
+          if (height > 1000) {
+            width = Math.floor(width / 2);
+            height = Math.floor(height / 2);
+          }
+
+          const canvas = document.createElement("canvas");
+          canvas.width = width;
+          canvas.height = height;
+          const ctx = canvas.getContext("2d");
+          if (!ctx) return;
+
+          ctx.drawImage(img, 0, 0, width, height);
+
+          const originalType = file.type;
+          const compressedBase64 = canvas.toDataURL(originalType);
+
+          setForm((prev) => ({ ...prev, image: compressedBase64 }));
+        };
+      }
+    };
+    reader.readAsDataURL(file);
   };
 
   const handleSubmit = async () => {
     try {
       const formData = new FormData();
       console.log(form.image);
-      if(form.title == ""){
+      if (form.title == "") {
         alert("Title is required");
         return;
       }
-      if(form.artist == ""){
+      if (form.artist == "") {
         alert("Artist is required");
         return;
       }
-      if(form.minPrice == ""){
+      if (form.minPrice == "") {
         alert("Price is required");
         return;
       }
-      if(form.image == ""){
+      if (form.image == "") {
         alert("Image is required");
         return;
       }
@@ -114,7 +141,7 @@ export function AddArtworkModal({ open, onClose, onAdd }) {
       if (fileInputRef.current) {
         fileInputRef.current.value = "";
       }
-      
+
       // Reset form here
       setForm({
         title: "",
@@ -130,7 +157,7 @@ export function AddArtworkModal({ open, onClose, onAdd }) {
       });
 
       await onAdd();
-      
+
     } catch (error) {
       console.error(error);
       toast({
